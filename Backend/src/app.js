@@ -1,4 +1,5 @@
 import express from "express";
+import { ApiError } from "./utils/ApiError.js";
 
 //we can configure cors and cookieParser after the formation of app
 import cors from "cors";
@@ -60,6 +61,28 @@ import userRouter from "./routes/user.routes.js";
 
 //routes declaration"
 app.use("/api/v1/users", userRouter)
+
+
+//middle ware to send error message in json because express sends error in html => it will use my ApiError to send message to frontend.
+app.use((err, req, res, next) => {
+  if (err instanceof ApiError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      errors: err.errors || [],
+      data: null,
+    });
+  }
+
+  // For unexpected errors
+  return res.status(500).json({
+    success: false,
+    message: 'Internal Server Error',
+    errors: [],
+    data: null,
+  });
+});
+
 
 export { app };
 //we can also export it by using "export default app" but this is also same 
