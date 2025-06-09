@@ -1,7 +1,35 @@
 import { useState } from "react";
+import { useRef } from "react";
+import axios from "axios";
+
 
 const Login = () => {
   const [isLoginPage, SetIsLoginPage] = useState(true);
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+
+  const username = useRef(null);
+  const email = useRef(null);
+  const password = useRef(null);
+
+  
+  const handleSubmitButton = (event) => {
+    event.preventDefault();
+    if(!isLoginPage){
+      axios.post(`${baseURL}/users/register`, {
+        username: username.current.value,
+        email: email.current.value,
+        password: password.current.value
+      })
+      .then((response) => {
+        console.log("Success ", response)
+      })
+      .catch((error) => {
+        console.log("Error ", error.response?.data || error.message);
+      })
+    }
+  }
+
 
   const handleToggelButton = () => {
     SetIsLoginPage(!isLoginPage);
@@ -15,21 +43,24 @@ const Login = () => {
           {!isLoginPage && (
             <input
               type="text"
+              ref = {username}
               placeholder="Full Name"
               className="border-1 w-full text-lg p-2 rounded-2xl pl-4 mb-2"
             ></input>
           )}
           <input
             type="email"
+            ref = {email}
             placeholder="Enter your email"
             className="border-1 w-full text-lg p-2 rounded-2xl pl-4"
           ></input>
           <input
             type="password"
+            ref = {password}
             placeholder="Password"
             className="border-1 w-full p-2 pl-4 text-lg rounded-2xl mt-2"
           ></input>
-          <button className="text-center mt-2 w-full p-2 bg-[#E82561] rounded-2xl text-white text-lg font-medium cursor-pointer">
+          <button className="text-center mt-2 w-full p-2 bg-[#E82561] rounded-2xl text-white text-lg font-medium cursor-pointer" onClick={handleSubmitButton}>
             {isLoginPage ? "Login" : "Register"}
           </button>
         </form>
