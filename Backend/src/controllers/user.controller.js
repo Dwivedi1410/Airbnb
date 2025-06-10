@@ -24,7 +24,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const {username, email, password} = req.body;
 
     if(
-        [username, email, password].some((field) => field?.trim === "")
+        [username, email, password].some((field) => field?.trim() === "")
     ){
         throw new ApiError(400, 'All fields are required')
     }
@@ -70,9 +70,7 @@ const loginUser = asyncHandler( async (req, res) => {
         throw new ApiError(400, "Email and Password are required");
     }
 
-    const user = await User.findOne({
-        $or : [{email}, {password}]
-    })
+    const user = await User.findOne({email})
 
     if(!user){
         throw new ApiError(404, "User dosn't exists")
@@ -86,7 +84,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
 
-    const loggedInUser = await User.findOne(user._id).select("-password -refreshToken");
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
 
     // Now we have to send the cookies
@@ -107,7 +105,6 @@ const loginUser = asyncHandler( async (req, res) => {
             200, 
             {
                 user: loggedInUser,
-                refreshToken,
                 accessToken,
             },
             "User LoggedIn successfully"
