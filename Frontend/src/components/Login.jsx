@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useRef } from "react";
 import {useNavigate} from "react-router-dom"
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice.js";
 import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
 
   const [isLoginPage, SetIsLoginPage] = useState(true);
   const [messageToUser, setMessageToUser] = useState("");
@@ -25,7 +29,7 @@ const Login = () => {
           username: username.current?.value.trim(),
           email: email.current?.value.trim(),
           password: password.current?.value.trim(),
-        })
+        },{withCredentials: true})
         .then((response) => {
           setMessageToUser("Successfully registered, Now you can login");
           console.log("Success ", response);
@@ -40,9 +44,11 @@ const Login = () => {
         .post(`${baseURL}/users/login`, {
           email: email.current?.value.trim(),
           password: password.current?.value.trim(),
-        })
+        },{withCredentials: true})
         .then((response) => {
-          navigate("/");
+          const {email, username} = response?.data?.data?.user || {};
+          dispatch(addUser({email: email, username: username}))
+          navigate("/home");
           console.log("Success ", response);
         })
         .catch((error) => {
@@ -67,7 +73,7 @@ const Login = () => {
     <div className="h-screen flex items-center justify-center -mt-25">
       <div className="w-full max-w-md mx-auto p-6 shadow-2xl rounded-4xl">
         <div className="text-center text-4xl font-medium">{isLoginPage ? "Login" : "Register"}</div>
-        <form className="mt-8">
+        <form className="mt-8" onSubmit={handleSubmitButton}>
           {!isLoginPage && (
             <input
               type="text"
