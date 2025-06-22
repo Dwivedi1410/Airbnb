@@ -2,7 +2,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import imageDownloader from "image-downloader";
+import path from "path";
+import { fileURLToPath } from "url";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -127,7 +130,7 @@ const userProfile = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = async (req, res) => {
-  User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     req.user._id,
     {
       $set: {
@@ -153,19 +156,81 @@ const logoutUser = async (req, res) => {
     .json(new ApiResponse(200, {}, "User LoggedOut"));
 };
 
-const uploadImageByLink = asyncHandler( async(req, res) => {
-  const imageURL = req.body;
-  console.log(imageURL);
+const uploadImageByLink = asyncHandler(async (req, res) => {
+  const { imageLink } = req.body;
 
-  return res
-  .status(200)
-  .json(
+  const __filename = fileURLToPath(import.meta.url);
+  // console.log('this is file name : ',__filename);
+  const __dirname = path.dirname(__filename);
+  // console.log('this is directory name : ',__dirname);
+
+  const dest = path.join(__dirname, "..", "..", "public", "temp");
+  // console.log('this is destination: ',dest)
+
+  // console.log(imageLink)
+
+  if (!imageLink) {
+    throw new ApiError(400, "URL is necessary");
+  }
+
+  const options = {
+    url: imageLink,
+    dest,
+  };
+
+  const { filename } = await imageDownloader.image(options);
+
+  // console.log('this is uploaded file name :', filename)
+
+  const uploadedImage = await uploadOnCloudinary(filename);
+  
+  if (!uploadedImage || uploadedImage.length === 0) {
+    throw new ApiError(500, "Failed to upload image to Cloudinary");
+  }
+
+  return res.status(200).json(
     new ApiResponse(
       200,
-      {},
-      "Image is uploaded successfully",
+      {
+        url: uploadedImage[0].url
+      },
+      "Image uploaded successfully"
     )
-  )
-})
+  );
+});
 
-export { registerUser, loginUser, userProfile, logoutUser, uploadImageByLink };
+const uploadPhotoFile = asyncHandler(async (req, res) => {
+  const photos = req.files;
+  
+  if (!photos || photos.length === 0) {
+    throw new ApiError(400, "At least one image is required");
+  }
+
+  // Extract paths from multer files
+  const filePaths = photos.map(photo => photo.path);
+  
+  const uploadedImages = await uploadOnCloudinary(filePaths);
+  
+  if (!uploadedImages || uploadedImages.length === 0) {
+    throw new ApiError(500, "Failed to upload images to Cloudinary");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        urls: uploadedImages.map(img => img.url)
+      },
+      "Photos uploaded successfully"
+    )
+  );
+});
+
+export {
+  registerUser,
+  loginUser,
+  userProfile,
+  logoutUser,
+  uploadImageByLink,
+  uploadPhotoFile,
+};

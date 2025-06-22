@@ -33,6 +33,10 @@ const placeSchema = new Schema({
   checkOut: {
     type: Number,
   },
+  price: {
+    type: Number,
+    required: true
+  },
   maxGuests: {
     type: Number,
   },
