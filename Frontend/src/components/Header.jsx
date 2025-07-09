@@ -1,9 +1,10 @@
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router-dom";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
+import { setPlaces } from "../utils/placeSlice";
 
 const Header = () => {
   const dispatch = useDispatch();
@@ -11,7 +12,11 @@ const Header = () => {
   const user = useSelector((store) => store.user);
   //  console.log(user);
 
+  const place = useSelector((store) => store.place);
+
   const navigate = useNavigate();
+
+  const [placesLoaded, setPlacesLoaded] = useState(false);
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -23,7 +28,6 @@ const Header = () => {
           // console.log(response, "This is message from frontend");
           const { email, username } = response?.data?.data?.user || {};
           dispatch(addUser({ email: email, username: username }));
-          navigate("/home");
         })
         .catch((error) => {
           // console.log(error, "This is error message");
@@ -36,8 +40,19 @@ const Header = () => {
           }
         });
     }
-  }, []);
 
+   if (!placesLoaded && place.length === 0) {
+      axios.get(`${baseURL}/users/user-places`, { withCredentials: true })
+        .then((response) => {
+          dispatch(setPlaces(response.data.data)); 
+          setPlacesLoaded(true);
+        })
+        .catch((error) => {
+          console.log(error);
+          setPlacesLoaded(true);
+        });
+    }
+  }, [user, placesLoaded, place.length]);
 
   return (
     <div>
@@ -132,7 +147,10 @@ const Header = () => {
         </div>
 
         {user ? (
-          <Link to="/user" className="text-lg border-2 border-[#b7b7b5] px-4 rounded-full font-medium flex items-center">
+          <Link
+            to="/user"
+            className="text-lg border-2 border-[#b7b7b5] px-4 rounded-full font-medium flex items-center"
+          >
             {user.username}
             <svg
               xmlns="http://www.w3.org/2000/svg"

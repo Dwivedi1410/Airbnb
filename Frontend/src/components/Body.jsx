@@ -3,7 +3,7 @@ import Header from "./Header";
 
 const Body = () => {
   return (
-    <div className="p-4 h-screen">
+    <div className="py-4 px-8 h-screen">
       <Header />
       <Outlet />
     </div>

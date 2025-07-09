@@ -27,11 +27,11 @@ const placeSchema = new Schema({
   extraInfo: {
     type: String, 
   },
-  checkIn: {
-    type: Number,
+  checkInTime: {
+    type: String,
   },
-  checkOut: {
-    type: Number,
+  checkOutTime: {
+    type: String,
   },
   price: {
     type: Number,

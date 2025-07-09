@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useRef } from "react";
-import {useNavigate} from "react-router-dom"
-import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice.js";
 import axios from "axios";
+import { addPlace, setPlaces } from "../utils/placeSlice.js";
 
 const Login = () => {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
-
+  const place = useSelector((store) => store.place);
+  const [placesLoaded, setPlacesLoaded] = useState(false); 
   const [isLoginPage, SetIsLoginPage] = useState(true);
   const [messageToUser, setMessageToUser] = useState("");
 
@@ -22,40 +23,54 @@ const Login = () => {
   const handleSubmitButton = async (event) => {
     event.preventDefault();
 
-    
     if (!isLoginPage) {
       await axios
-        .post(`${baseURL}/users/register`, {
-          username: username.current?.value.trim(),
-          email: email.current?.value.trim(),
-          password: password.current?.value.trim(),
-        },{withCredentials: true})
+        .post(
+          `${baseURL}/users/register`,
+          {
+            username: username.current?.value.trim(),
+            email: email.current?.value.trim(),
+            password: password.current?.value.trim(),
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
           setMessageToUser("Successfully registered, Now you can login");
-          console.log("Success ", response);
         })
         .catch((error) => {
           const errorMessage = error.response?.data?.message || "Something went wrong";
           setMessageToUser(errorMessage);
-          console.log("Error: ", errorMessage);
         });
     } else {
       await axios
-        .post(`${baseURL}/users/login`, {
-          email: email.current?.value.trim(),
-          password: password.current?.value.trim(),
-        },{withCredentials: true})
+        .post(
+          `${baseURL}/users/login`,
+          {
+            email: email.current?.value.trim(),
+            password: password.current?.value.trim(),
+          },
+          { withCredentials: true }
+        )
         .then((response) => {
-          const {email, username} = response?.data?.data?.user || {};
-          dispatch(addUser({email: email, username: username}))
+          const { email, username } = response?.data?.data?.user || {};
+          dispatch(addUser({ email: email, username: username }));
           navigate("/home");
-          console.log("Success ", response);
         })
         .catch((error) => {
           const errorMessage = error.response?.data?.message || "Something went wrong";
           setMessageToUser(errorMessage);
-          console.log("Error: ", errorMessage);
         });
+
+      if (!placesLoaded && place.length === 0) {
+        axios.get(`${baseURL}/users/user-places`, { withCredentials: true })
+          .then((response) => {
+            dispatch(setPlaces(response.data.data)); 
+            setPlacesLoaded(true);
+          })
+          .catch((error) => {
+            setPlacesLoaded(true);
+          });
+      }
     }
   };
 
@@ -70,62 +85,75 @@ const Login = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center -mt-25">
-      <div className="w-full max-w-md mx-auto p-6 shadow-2xl rounded-4xl">
-        <div className="text-center text-4xl font-medium">{isLoginPage ? "Login" : "Register"}</div>
-        <form className="mt-8" onSubmit={handleSubmitButton}>
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-0">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 sm:p-8">
+        <div className="text-center text-3xl font-bold text-gray-800 mb-6">
+          {isLoginPage ? "Login" : "Register"}
+        </div>
+        
+        <form className="space-y-4" onSubmit={handleSubmitButton}>
           {!isLoginPage && (
             <input
               type="text"
               ref={username}
               placeholder="Full Name"
-              className="border-1 w-full text-lg p-2 rounded-2xl pl-4 mb-2"
-            ></input>
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E82561]"
+              required={!isLoginPage}
+            />
           )}
+          
           <input
             type="email"
             ref={email}
             placeholder="Enter your email"
-            className="border-1 w-full text-lg p-2 rounded-2xl pl-4"
-          ></input>
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E82561]"
+            required
+          />
+          
           <input
             type="password"
             ref={password}
             placeholder="Password"
-            className="border-1 w-full p-2 pl-4 text-lg rounded-2xl mt-2"
-          ></input>
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E82561]"
+            required
+          />
+          
           <button
-            className="text-center mt-2 w-full p-2 bg-[#E82561] rounded-2xl text-white text-lg font-medium cursor-pointer"
-            onClick={handleSubmitButton}
+            type="submit"
+            className="w-full py-3 bg-[#E82561] hover:bg-[#c81e52] text-white font-medium rounded-lg transition duration-300"
           >
             {isLoginPage ? "Login" : "Register"}
           </button>
         </form>
 
-        <p className="mt-3 text-[#E82561] font-medium text-lg">{messageToUser}</p>
+        {messageToUser && (
+          <p className={`mt-4 text-center text-base font-medium ${messageToUser.includes("Success") ? 'text-green-600' : 'text-[#E82561]'}`}>
+            {messageToUser}
+          </p>
+        )}
 
-        <div className="text-xl mt-4 text-gray-600">
+        <div className="mt-6 text-center">
           {isLoginPage ? (
-            <p>
+            <p className="text-gray-600">
               Don't have an account?{" "}
-              <span
-                className="underline text-[#E82561] cursor-pointer font-medium"
+              <button
+                type="button"
+                className="text-[#E82561] font-medium hover:underline"
                 onClick={handleToggelButton}
               >
-                {" "}
                 Register Now
-              </span>
+              </button>
             </p>
           ) : (
-            <p>
+            <p className="text-gray-600">
               Already a User?{" "}
-              <span
-                className="underline text-[#E82561] cursor-pointer font-medium"
+              <button
+                type="button"
+                className="text-[#E82561] font-medium hover:underline"
                 onClick={handleToggelButton}
               >
-                {" "}
                 Login
-              </span>
+              </button>
             </p>
           )}
         </div>

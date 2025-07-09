@@ -2,6 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
+import { Place } from "../models/places.model.js";
 import imageDownloader from "image-downloader";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -183,7 +184,7 @@ const uploadImageByLink = asyncHandler(async (req, res) => {
   // console.log('this is uploaded file name :', filename)
 
   const uploadedImage = await uploadOnCloudinary(filename);
-  
+
   if (!uploadedImage || uploadedImage.length === 0) {
     throw new ApiError(500, "Failed to upload image to Cloudinary");
   }
@@ -192,7 +193,7 @@ const uploadImageByLink = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       {
-        url: uploadedImage[0].url
+        url: uploadedImage[0].url,
       },
       "Image uploaded successfully"
     )
@@ -201,16 +202,16 @@ const uploadImageByLink = asyncHandler(async (req, res) => {
 
 const uploadPhotoFile = asyncHandler(async (req, res) => {
   const photos = req.files;
-  
+
   if (!photos || photos.length === 0) {
     throw new ApiError(400, "At least one image is required");
   }
 
   // Extract paths from multer files
-  const filePaths = photos.map(photo => photo.path);
-  
+  const filePaths = photos.map((photo) => photo.path);
+
   const uploadedImages = await uploadOnCloudinary(filePaths);
-  
+
   if (!uploadedImages || uploadedImages.length === 0) {
     throw new ApiError(500, "Failed to upload images to Cloudinary");
   }
@@ -219,12 +220,211 @@ const uploadPhotoFile = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       {
-        urls: uploadedImages.map(img => img.url)
+        urls: uploadedImages.map((img) => img.url),
       },
       "Photos uploaded successfully"
     )
   );
 });
+
+const registerPlace = asyncHandler(async (req, res) => {
+  const user = req.user._id.toString();
+
+  // console.log(user)
+
+  const {
+    title,
+    address,
+    uploadedImage,
+    description,
+    perks,
+    extraInfo,
+    checkInTime,
+    checkOutTime,
+    price,
+    maxGuests,
+  } = req.body;
+
+
+  // console.log(title)
+  // console.log(address)
+  // console.log(uploadedImage)
+  // console.log(description)
+  console.log(checkInTime)
+  console.log(checkOutTime)
+
+  // console.log(title,
+  //   address,
+  //   uploadedImage,
+  //   description,
+  //   perks,
+  //   extraInfo,
+  //   checkInTime,
+  //   checkOutTime,
+  //   price,
+  //   maxGuests)
+
+  // if (
+  //   [
+  //     title,
+  //     address,
+  //     uploadedImages,
+  //     description,
+  //     perks,
+  //     extraInfo,
+  //     checkInTime,
+  //     checkOutTime,
+  //     price,
+  //     maxGuests,
+  //   ].some((field) => field?.trim() === "")
+  // ) {
+  //   throw new ApiError(400, "All fields are required");
+  // }
+
+  const placeAlreadyExist = await Place.findOne({
+    $or: [{ title }],
+  });
+
+  // console.log(placeAlreadyExist)
+
+  if (placeAlreadyExist) {
+    throw new ApiError(409, "User with this title already exists");
+  }
+
+  const place = await Place.create({
+    owner: user,
+    title,
+    address,
+    photos: uploadedImage,
+    description,
+    perks,
+    extraInfo,
+    checkInTime,
+    checkOutTime,
+    price,
+    maxGuests,
+  });
+
+  // console.log(place)
+
+  const createdPlace = await Place.findById(place._id);
+
+  console.log(createdPlace)
+
+  if (!createdPlace) {
+    throw new ApiError(500, "Internal Server Error");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        createdPlace,
+      },
+      "data of place"
+    )
+  );
+});
+
+const userPlaces = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  console.log(userId);
+  const places = await Place.find({ owner: userId });
+
+  console.log(places);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, places, 
+      "This is the data of the places"
+    ));
+});
+
+const updatePlace = asyncHandler(async (req, res) => {
+  const placeId = req.params.id;
+  const userId = req.user._id;
+  const updateData = req.body; 
+
+  const place = await Place.findById(placeId);
+  if (!place) {
+    throw new ApiError(404, "Place not found");
+  }
+
+  if (place.owner.toString() !== userId.toString()) {
+    throw new ApiError(403, "Unauthorized to update this place");
+  }
+
+
+  const updateFields = {
+    title: updateData.title,
+    address: updateData.address,
+    photos: updateData.uploadedImage,
+    description: updateData.description,
+    perks: updateData.perks,
+    extraInfo: updateData.extraInfo,
+    checkInTime: updateData.checkInTime,
+    checkOutTime: updateData.checkOutTime,
+    price: updateData.price,
+    maxGuests: updateData.maxGuests,
+  };
+
+  const updatedPlace = await Place.findByIdAndUpdate(
+    placeId,
+    { $set: updateFields },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedPlace) {
+    throw new ApiError(500, "Failed to update place");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { updatedPlace },
+      "Place updated successfully"
+    )
+  );
+});
+
+const PlacesData = asyncHandler( async(req, res) => {
+  const data = await Place.find();
+
+  if(!data){
+    throw new ApiError(404, "No place has been registered yet");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        data
+      },
+      "This is the data of all the Places"
+    )
+  )
+
+})
+
+const SinglePlaceData = asyncHandler( async(req, res) => {
+  const placeId = req.params.id;
+
+  const place = await Place.findById(placeId);
+
+  if(!place){
+    throw new ApiError(404, "Place not Found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        place
+      },
+      "This is the data of the single page"
+    )
+  )
+})
 
 export {
   registerUser,
@@ -233,4 +433,9 @@ export {
   logoutUser,
   uploadImageByLink,
   uploadPhotoFile,
+  registerPlace,
+  userPlaces,
+  updatePlace,
+  PlacesData,
+  SinglePlaceData,
 };
