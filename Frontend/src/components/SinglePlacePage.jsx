@@ -11,6 +11,8 @@ const SinglePlacePage = () => {
   const [singlePlaceData, setSinglePlaceData] = useState(null);
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+  console.log(id);
+
   useEffect(() => {
     axios
       .get(`${baseURL}/users/single-place-data/${id}`)
@@ -27,7 +29,7 @@ const SinglePlacePage = () => {
   }
 
   return (
-    <div className="mt-6 px-4 md:px-8 py-6 bg-gray-100  -mx-8">
+    <div className="mt-6 px-4 md:px-8 py-6">
       <h1 className="text-3xl font-semibold text-gray-800 mb-2">{singlePlaceData.title}</h1>
       <div className="flex gap-4">
         <a

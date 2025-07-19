@@ -10,6 +10,8 @@ import PlaceRegistration from "./components/PlaceRegistration";
 import Bookings from "./components/Bookings";
 import Profile from "./components/Profile";
 import SinglePlacePage from "./components/SinglePlacePage";
+import BookingConfirm from "./components/BookingConfirm";
+import Contact from "./components/Contact";
 
 // App.jsx
 function App() {
@@ -21,7 +23,9 @@ function App() {
         { path: "/login", element: <Login /> },
         { index: true, element: <Home /> },
         { path: "/home", element: <Home />},
+        {path: "/getInTouch", element: <Contact />},
         { path: "/home/place/:id", element: <SinglePlacePage />},
+        { path: "/home/place/booking/:id", element: <BookingConfirm />},
         {
           path: "/user",
           element: <User />,

@@ -7,6 +7,7 @@ import imageDownloader from "image-downloader";
 import path from "path";
 import { fileURLToPath } from "url";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { Booking } from "../models/booking.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -245,13 +246,12 @@ const registerPlace = asyncHandler(async (req, res) => {
     maxGuests,
   } = req.body;
 
-
   // console.log(title)
   // console.log(address)
   // console.log(uploadedImage)
   // console.log(description)
-  console.log(checkInTime)
-  console.log(checkOutTime)
+  // console.log(checkInTime);
+  // console.log(checkOutTime);
 
   // console.log(title,
   //   address,
@@ -309,7 +309,7 @@ const registerPlace = asyncHandler(async (req, res) => {
 
   const createdPlace = await Place.findById(place._id);
 
-  console.log(createdPlace)
+  // console.log(createdPlace);
 
   if (!createdPlace) {
     throw new ApiError(500, "Internal Server Error");
@@ -328,22 +328,20 @@ const registerPlace = asyncHandler(async (req, res) => {
 
 const userPlaces = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  console.log(userId);
+  // console.log(userId);
   const places = await Place.find({ owner: userId });
 
-  console.log(places);
+  // console.log(places);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, places, 
-      "This is the data of the places"
-    ));
+    .json(new ApiResponse(200, places, "This is the data of the places"));
 });
 
 const updatePlace = asyncHandler(async (req, res) => {
   const placeId = req.params.id;
   const userId = req.user._id;
-  const updateData = req.body; 
+  const updateData = req.body;
 
   const place = await Place.findById(placeId);
   if (!place) {
@@ -353,7 +351,6 @@ const updatePlace = asyncHandler(async (req, res) => {
   if (place.owner.toString() !== userId.toString()) {
     throw new ApiError(403, "Unauthorized to update this place");
   }
-
 
   const updateFields = {
     title: updateData.title,
@@ -378,19 +375,15 @@ const updatePlace = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to update place");
   }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { updatedPlace },
-      "Place updated successfully"
-    )
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { updatedPlace }, "Place updated successfully"));
 });
 
-const PlacesData = asyncHandler( async(req, res) => {
+const PlacesData = asyncHandler(async (req, res) => {
   const data = await Place.find();
 
-  if(!data){
+  if (!data) {
     throw new ApiError(404, "No place has been registered yet");
   }
 
@@ -398,20 +391,19 @@ const PlacesData = asyncHandler( async(req, res) => {
     new ApiResponse(
       200,
       {
-        data
+        data,
       },
       "This is the data of all the Places"
     )
-  )
+  );
+});
 
-})
-
-const SinglePlaceData = asyncHandler( async(req, res) => {
+const SinglePlaceData = asyncHandler(async (req, res) => {
   const placeId = req.params.id;
 
   const place = await Place.findById(placeId);
 
-  if(!place){
+  if (!place) {
     throw new ApiError(404, "Place not Found");
   }
 
@@ -419,12 +411,188 @@ const SinglePlaceData = asyncHandler( async(req, res) => {
     new ApiResponse(
       200,
       {
-        place
+        place,
       },
       "This is the data of the single page"
     )
-  )
-})
+  );
+});
+
+// Fix this backend controller
+const BookingOfPlace = asyncHandler(async (req, res) => {
+  const { checkIn, checkOut, amount, numberOfGuests, place, userName } = req.body;
+  const userId = req.user?._id; // Add user ID from authenticated user
+
+  if (!userId) {
+    throw new ApiError(401, "User authentication required");
+  }
+
+  if (!checkIn || !checkOut || !amount || !numberOfGuests || !place || !userName) {
+    throw new ApiError(400, "All Fields are required");
+  }
+
+  // Fix: Create with object syntax and include user ID
+  const booking = await Booking.create({
+    user: userId,
+    checkIn: new Date(checkIn), // Convert to Date object
+    checkOut: new Date(checkOut), // Convert to Date object
+    place,
+    numberOfGuests: parseInt(numberOfGuests), // Convert to number
+    userName,
+    amount
+  });
+
+  if (!booking) {
+    throw new ApiError(500, "Failed to create booking");
+  }
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      { booking },
+      "Place Successfully Booked"
+    )
+  );
+});
+
+
+const BookingConfirmation = asyncHandler(async (req, res) => {
+  const placeId = req.params.id;
+  const userId = req.user._id;
+
+  if(!userId){
+    throw new ApiError(400, "User not found")
+  }
+
+  if (!placeId) {
+    throw new ApiError(400, "Place ID is missing");
+  }
+
+  const bookingData = await Booking.findOne({
+    user: userId,
+    place: placeId
+  })
+  .sort({ createdAt: -1 })
+  .populate("place");
+
+  if (!bookingData) {
+    throw new ApiError(404, "No booking found for this place");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { bookingData },
+      "Booking details retrieved successfully"
+    )
+  );
+});
+
+const BookingDetails = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  if (!userId) {
+    throw new ApiError(400, "User not found");
+  }
+
+  const bookings = await Booking.find({ user: userId })
+    .populate({
+      path: 'place',
+    })
+    .sort({ createdAt: -1 });
+
+  if (!bookings) {
+    throw new ApiError(404, "No bookings found for this user");
+  }
+
+  
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        bookings
+      },
+      "User bookings retrieved successfully"
+    )
+  );
+});
+
+const CancelReservation = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const bookingId = req.params.id;  // Changed from placeId to bookingId
+
+  if (!userId) {
+    throw new ApiError(400, "User not found");
+  }
+
+  if (!bookingId) {
+    throw new ApiError(400, "Booking ID is required");
+  }
+
+  // 1. Verify the booking exists and belongs to the user
+  const booking = await Booking.findOne({
+    _id: bookingId,
+    user: userId
+  });
+
+  if (!booking) {
+    throw new ApiError(404, "Booking not found or you don't have permission to cancel it");
+  }
+
+  // 2. Perform the deletion
+  const result = await Booking.deleteOne({
+    _id: bookingId,
+    user: userId
+  });
+
+  if (result.deletedCount === 0) {
+    throw new ApiError(500, "Failed to cancel reservation");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        deletedCount: result.deletedCount
+      },
+      "Reservation canceled successfully"
+    )
+  );
+});
+
+const RemovePlace = asyncHandler(async(req, res) => {
+  const userId = req.user._id;
+  const placeId = req.params.id;
+
+  if (!userId) {
+    throw new ApiError(400, "User not found");
+  }
+
+  if (!placeId) {
+    throw new ApiError(400, "Place ID is required");
+  }
+
+  console.log("User", userId)
+  console.log("Place", placeId)
+
+  const place = await Place.findOneAndDelete({
+    _id: placeId,
+    owner: userId
+  });
+
+  if (!place) {
+    throw new ApiError(404, "Place not found or you don't have permission to remove it");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { deletedPlace: place },
+      "Place deleted successfully"
+    )
+  );
+});
 
 export {
   registerUser,
@@ -438,4 +606,9 @@ export {
   updatePlace,
   PlacesData,
   SinglePlaceData,
+  BookingOfPlace,
+  BookingConfirmation,
+  BookingDetails,
+  CancelReservation,
+  RemovePlace
 };

@@ -10,13 +10,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const user = useSelector((store) => store.user);
 
-  if(!user){
-    return (
-      <ShimmerUI />
-    )
+  if (!user) {
+    return <ShimmerUI />;
   }
-  
-  const {email, username} = user;
+
+  const { email, username } = user;
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
   const handleLogOutButtonClick = async () => {
@@ -24,11 +22,9 @@ const Profile = () => {
       await axios.post(`${baseURL}/users/logout`, null, {
         withCredentials: true,
       });
-      // console.log(response);
 
       dispatch(removeUser());
       dispatch(resetPlaces());
-
       navigate("/home");
     } catch (error) {
       console.log(error);
@@ -36,18 +32,30 @@ const Profile = () => {
   };
 
   return (
-    <div className="mt-4 grid justify-center">
-      <p>
-        You have been logged In as{" "}
-        <span className="text-lg text-[#E82561] font-medium">{username}</span> and your email is{" "}
-        <span className="text-lg text-[#E82561] font-medium">{email}</span>
-      </p>
-      <button
-        className="text-xl bg-[#E82561] text-white font-medium mt-2 w-md rounded-full py-2"
-        onClick={handleLogOutButtonClick}
-      >
-        Logout
-      </button>
+    <div className="mt-6 px-4 sm:px-6 md:px-10 max-w-2xl mx-auto">
+      <div className="text-center space-y-2">
+        <p className="text-base sm:text-lg">
+          You have been logged in as{" "}
+          <span className="text-lg sm:text-xl text-[#E82561] font-medium">
+            {username}
+          </span>
+        </p>
+        <p className="text-base sm:text-lg">
+          and your email is{" "}
+          <span className="text-lg sm:text-xl text-[#E82561] font-medium">
+            {email}
+          </span>
+        </p>
+      </div>
+
+      <div className="flex justify-center mt-4">
+        <button
+          className="text-base sm:text-lg md:text-xl bg-[#E82561] hover:bg-[#c01d4d] text-white font-medium w-32 sm:w-40 md:w-48 rounded-full py-2 transition-colors duration-300"
+          onClick={handleLogOutButtonClick}
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 };

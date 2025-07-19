@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 
 const PlaceCard = ({ place }) => {
-  console.log("This is the place data from the place card", place);
   return (
     <Link to = {`/home/place/${place._id}`} className="cursor-pointer">
       <div className="">

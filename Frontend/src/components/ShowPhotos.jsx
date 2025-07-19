@@ -2,7 +2,7 @@ const ShowPhotos = ({ photos, setShowMorePhotos }) => {
   console.log("This is from show more photos", photos[0]);
 
   return (
-    <div className="bg-gray-100 -mx-8 mt-8 p-4 relative">
+    <div className=" mt-8 p-4 relative">
       <div className="">
         {photos.map((photo, index) => (
           <img className="mx-auto w-4xl h-4xl mt-4" key={index} src={photo} />

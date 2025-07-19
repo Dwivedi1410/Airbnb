@@ -64,7 +64,7 @@ const DetailOfPlace = ({ place }) => {
       </div>
 
       <div className="grid-cols-2 md:col-span-2 lg:col-span-1">
-        <BookingCard />
+        <BookingCard place={place}/>
       </div>
 
 
