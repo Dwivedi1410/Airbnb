@@ -19,7 +19,6 @@ const BookingConfirm = () => {
                     `${baseURL}/users/booking-confirmation/${id}`,
                     { withCredentials: true }
                 );
-                console.log(response?.data?.data?.bookingData)
                 setConfirmationData(response?.data?.data?.bookingData);
             } catch (err) {
                 setError("Failed to load booking details");

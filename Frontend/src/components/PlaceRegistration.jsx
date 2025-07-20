@@ -85,7 +85,6 @@ const PlaceRegistration = () => {
           placeData,
           { withCredentials: true }
         );
-        console.log("This is the response that we get when we create a new place" , response);
         dispatch(addPlace(response.data.data.createdPlace));
       }
 

@@ -5,7 +5,6 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const accessKeyToSendEmail = import.meta.env.VITE_ACCESS_KEY_TO_SEND_MAIL;
-  console.log(accessKeyToSendEmail)
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -14,7 +13,6 @@ const Contact = () => {
     
     try {
       const formData = new FormData(event.target);
-      console.log(formData)
       formData.append("access_key", accessKeyToSendEmail);
 
       const response = await fetch("https://api.web3forms.com/submit", {
@@ -23,7 +21,6 @@ const Contact = () => {
       });
 
       const data = await response.json();
-      console.log(data)
       if (data.success) {
         setResult("Form submitted successfully!");
         event.target.reset();

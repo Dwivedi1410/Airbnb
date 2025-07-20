@@ -573,9 +573,6 @@ const RemovePlace = asyncHandler(async(req, res) => {
     throw new ApiError(400, "Place ID is required");
   }
 
-  console.log("User", userId)
-  console.log("Place", placeId)
-
   const place = await Place.findOneAndDelete({
     _id: placeId,
     owner: userId

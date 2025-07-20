@@ -1,5 +1,4 @@
 const PerksSelection = ({ perk }) => {
-  console.log(perk);
 
   if (perk === "Wifi") {
     return (

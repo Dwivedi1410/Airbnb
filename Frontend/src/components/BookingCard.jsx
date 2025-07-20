@@ -5,7 +5,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const BookingCard = ({ place }) => {
-  console.log("This is from Booking card", place);
   const user = useSelector((store) => store.user);
   const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState("");

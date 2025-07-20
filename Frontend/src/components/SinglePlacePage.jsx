@@ -11,7 +11,6 @@ const SinglePlacePage = () => {
   const [singlePlaceData, setSinglePlaceData] = useState(null);
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-  console.log(id);
 
   useEffect(() => {
     axios

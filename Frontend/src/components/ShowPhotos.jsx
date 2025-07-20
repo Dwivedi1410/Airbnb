@@ -1,5 +1,4 @@
 const ShowPhotos = ({ photos, setShowMorePhotos }) => {
-  console.log("This is from show more photos", photos[0]);
 
   return (
     <div className=" mt-8 p-4 relative">
