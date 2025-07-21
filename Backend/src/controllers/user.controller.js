@@ -93,10 +93,10 @@ const loginUser = asyncHandler(async (req, res) => {
   // For this we have to create options(nomral object)
 
   const options = {
-    httpOnly: false,
-    secure: false,
+    httpOnly: true,
+    secure: true,
     //This is done so that no one can modify our cookies from the frontend it can only be controlled or modifiable from the server
-    sameSite: "lax",
+    sameSite: "none",
   };
 
   return res
@@ -145,10 +145,10 @@ const logoutUser = async (req, res) => {
   );
 
   const options = {
-    httpOnly: false,
-    secure: false,
+    httpOnly: true,
+    secure: true,
     //This is done so that no one can modify our cookies from the frontend it can only be controlled or modifiable from the server
-    sameSite: "lax",
+    sameSite: "none",
   };
 
   return res
