@@ -14,7 +14,7 @@ const Bookings = () => {
     const fetchBookingDataOfUser = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${baseURL}/users/bookings`, { withCredentials: true });
+        const response = await axios.get(`${baseURL}/api/v1/users/bookings`, { withCredentials: true });
         setBookingData(response?.data?.data?.bookings);
       } catch (err) {
         setError("Failed to load booking details of User");

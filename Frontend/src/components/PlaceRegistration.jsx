@@ -73,7 +73,7 @@ const PlaceRegistration = () => {
       if (id) {
         // Update existing place
         response = await axios.put(
-          `${baseURL}/users/update-place/${id}`,
+          `${baseURL}/api/v1/users/update-place/${id}`,
           placeData,
           { withCredentials: true }
         );
@@ -81,7 +81,7 @@ const PlaceRegistration = () => {
       } else {
         // Create new place
         response = await axios.post(
-          `${baseURL}/users/register-place`,
+          `${baseURL}/api/v1/users/register-place`,
           placeData,
           { withCredentials: true }
         );

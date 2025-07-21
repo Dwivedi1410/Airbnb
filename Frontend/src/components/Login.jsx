@@ -26,7 +26,7 @@ const Login = () => {
     if (!isLoginPage) {
       await axios
         .post(
-          `${baseURL}/users/register`,
+          `${baseURL}/api/v1/users/register`,
           {
             username: username.current?.value.trim(),
             email: email.current?.value.trim(),
@@ -44,7 +44,7 @@ const Login = () => {
     } else {
       await axios
         .post(
-          `${baseURL}/users/login`,
+          `${baseURL}/api/v1/users/login`,
           {
             email: email.current?.value.trim(),
             password: password.current?.value.trim(),
@@ -62,7 +62,7 @@ const Login = () => {
         });
 
       if (!placesLoaded && place.length === 0) {
-        axios.get(`${baseURL}/users/user-places`, { withCredentials: true })
+        axios.get(`${baseURL}/api/v1/users/user-places`, { withCredentials: true })
           .then((response) => {
             dispatch(setPlaces(response.data.data)); 
             setPlacesLoaded(true);

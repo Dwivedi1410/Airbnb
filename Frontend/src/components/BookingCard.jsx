@@ -59,7 +59,7 @@ const BookingCard = ({ place }) => {
     const baseURL = import.meta.env.VITE_API_BASE_URL;
 
     axios
-      .post(`${baseURL}/users/place-booking`, bookingData, { withCredentials: true })
+      .post(`${baseURL}/api/v1/users/place-booking`, bookingData, { withCredentials: true })
       .then((response) => navigate(`/home/place/booking/${place._id}`))
       .catch((error) => console.log(error));
 

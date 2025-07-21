@@ -23,7 +23,7 @@ const Header = () => {
   useEffect(() => {
     if (!user) {
       axios
-        .get(`${baseURL}/users/profile`, { withCredentials: true })
+        .get(`${baseURL}/api/v1/users/profile`, { withCredentials: true })
         .then((response) => {
           // console.log(response, "This is message from frontend");
           const { email, username } = response?.data?.data?.user || {};
@@ -43,7 +43,7 @@ const Header = () => {
 
     if (!placesLoaded && place.length === 0) {
       axios
-        .get(`${baseURL}/users/user-places`, { withCredentials: true })
+        .get(`${baseURL}/api/v1/users/user-places`, { withCredentials: true })
         .then((response) => {
           dispatch(setPlaces(response.data.data));
           setPlacesLoaded(true);

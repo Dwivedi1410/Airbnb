@@ -16,7 +16,7 @@ const BookingConfirm = () => {
             try {
                 setLoading(true);
                 const response = await axios.get(
-                    `${baseURL}/users/booking-confirmation/${id}`,
+                    `${baseURL}/api/v1/users/booking-confirmation/${id}`,
                     { withCredentials: true }
                 );
                 setConfirmationData(response?.data?.data?.bookingData);

@@ -10,7 +10,7 @@ const Home = () => {
 
   useEffect(() => {
     axios
-      .get(`${baseURL}/users/places-data`)
+      .get(`${baseURL}/api/v1/users/places-data`)
       .then((response) => setPlaceData(response?.data?.data?.data,))
       .catch((error) => console.log(error));
   }, []);

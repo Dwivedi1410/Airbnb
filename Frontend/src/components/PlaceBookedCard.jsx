@@ -27,7 +27,7 @@ const PlaceBookedCard = ({ place, onCancel }) => {
       setError(null);
       
       await axios.delete(
-        `${baseURL}/users/cancel-reservation/${place?._id}`, 
+        `${baseURL}/api/v1/users/cancel-reservation/${place?._id}`, 
         { withCredentials: true }
       );
 

@@ -19,7 +19,7 @@ const Profile = () => {
 
   const handleLogOutButtonClick = async () => {
     try {
-      await axios.post(`${baseURL}/users/logout`, null, {
+      await axios.post(`${baseURL}/api/v1/users/logout`, null, {
         withCredentials: true,
       });
 

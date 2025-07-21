@@ -12,7 +12,7 @@ const ImageUpload = ({ imageLink, setImageLink, uploadedImage, setUploadedImage 
 
     axios
       .post(
-        `${baseURL}/users/upload-by-link`,
+        `${baseURL}/api/v1/users/upload-by-link`,
         {
           imageLink: imageURL,
         },
@@ -46,7 +46,7 @@ const ImageUpload = ({ imageLink, setImageLink, uploadedImage, setUploadedImage 
     }
 
     axios
-      .post(`${baseURL}/users/upload`, data, { withCredentials: true })
+      .post(`${baseURL}/api/v1/users/upload`, data, { withCredentials: true })
       .then((response) => {
         const newUrls = response.data.data.urls;
         setUploadedImage((prev) => [...prev, ...newUrls]);

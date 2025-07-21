@@ -11,7 +11,7 @@ const RegisteredPlaces = ({ item }) => {
   const removeRegisteredPlace = (e) => {
     e.stopPropagation(); // Prevent link navigation
     axios.delete(
-      `${baseURL}/users/remove-place/${item._id}`,
+      `${baseURL}/api/v1/users/remove-place/${item._id}`,
       { withCredentials: true }
     ).then((response) => {
       dispatch(removePlace(item._id));

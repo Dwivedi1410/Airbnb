@@ -14,7 +14,7 @@ const SinglePlacePage = () => {
 
   useEffect(() => {
     axios
-      .get(`${baseURL}/users/single-place-data/${id}`)
+      .get(`${baseURL}/api/v1/users/single-place-data/${id}`)
       .then((response) => setSinglePlaceData(response?.data?.data?.place))
       .catch((error) => console.log(error));
   }, [id]);
