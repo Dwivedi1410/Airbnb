@@ -6,7 +6,7 @@ import { Place } from "../models/places.model.js";
 import imageDownloader from "image-downloader";
 import path from "path";
 import { fileURLToPath } from "url";
-import { uploadBufferToCloudinary } from "../utils/cloudinary.js";
+import { uploadBufferToCloudinary, uploadUrlToCloudinary } from "../utils/cloudinary.js";
 import { Booking } from "../models/booking.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -160,44 +160,44 @@ const logoutUser = async (req, res) => {
 
 const uploadImageByLink = asyncHandler(async (req, res) => {
   const { imageLink } = req.body;
-
   if (!imageLink) throw new ApiError(400, "URL is necessary");
 
   try {
-    const result = await cloudinary.uploader.upload(imageLink, {
-      resource_type: "image",
-    });
+    const result = await uploadUrlToCloudinary(imageLink, { folder: "restnest" });
 
     return res.status(200).json(
-      new ApiResponse(200, { url: result.secure_url }, "Image uploaded successfully")
+      new ApiResponse(
+        200,
+        { url: result.secure_url },
+        "Image uploaded successfully"
+      )
     );
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
+  } catch (err) {
+    console.error("[uploadImageByLink] Cloudinary error:", err);
     throw new ApiError(500, "Failed to upload image to Cloudinary");
   }
 });
 
 
+
 const uploadPhotoFile = asyncHandler(async (req, res) => {
   const files = req.files;
-  if (!files || files.length === 0) {
-    throw new ApiError(400, "At least one image is required");
-  }
+  if (!files?.length) throw new ApiError(400, "At least one image is required");
 
   try {
-    const uploadedImages = await Promise.all(
-      files.map((file) => uploadBufferToCloudinary(file.buffer))
+    const results = await Promise.all(
+      files.map((f) => uploadBufferToCloudinary(f.buffer, { folder: "restnest" }))
     );
 
     return res.status(200).json(
       new ApiResponse(
         200,
-        { urls: uploadedImages.map((img) => img.secure_url) },
+        { urls: results.map((r) => r.secure_url) },
         "Photos uploaded successfully"
       )
     );
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
+  } catch (err) {
+    console.error("[uploadPhotoFile] Cloudinary error:", err);
     throw new ApiError(500, "Failed to upload images to Cloudinary");
   }
 });
