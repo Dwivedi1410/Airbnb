@@ -6,7 +6,7 @@ import { Place } from "../models/places.model.js";
 import imageDownloader from "image-downloader";
 import path from "path";
 import { fileURLToPath } from "url";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadBufferToCloudinary } from "../utils/cloudinary.js";
 import { Booking } from "../models/booking.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -158,74 +158,46 @@ const logoutUser = async (req, res) => {
     .json(new ApiResponse(200, {}, "User LoggedOut"));
 };
 
-const uploadImageByLink = asyncHandler(async (req, res) => {
+export const uploadImageByLink = asyncHandler(async (req, res) => {
   const { imageLink } = req.body;
 
-  const __filename = fileURLToPath(import.meta.url);
-  // console.log('this is file name : ',__filename);
-  const __dirname = path.dirname(__filename);
-  // console.log('this is directory name : ',__dirname);
+  if (!imageLink) throw new ApiError(400, "URL is necessary");
 
-  const dest = path.join(__dirname, "..", "..", "public", "temp");
-  // console.log('this is destination: ',dest)
+  try {
+    const result = await cloudinary.uploader.upload(imageLink, {
+      resource_type: "image",
+    });
 
-  // console.log(imageLink)
-
-  if (!imageLink) {
-    throw new ApiError(400, "URL is necessary");
-  }
-
-  const options = {
-    url: imageLink,
-    dest,
-  };
-
-  const { filename } = await imageDownloader.image(options);
-
-  // console.log('this is uploaded file name :', filename)
-
-  const uploadedImage = await uploadOnCloudinary(filename);
-
-  if (!uploadedImage || uploadedImage.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(200, { url: result.secure_url }, "Image uploaded successfully")
+    );
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
     throw new ApiError(500, "Failed to upload image to Cloudinary");
   }
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        url: uploadedImage[0].url,
-      },
-      "Image uploaded successfully"
-    )
-  );
 });
-
-const uploadPhotoFile = asyncHandler(async (req, res) => {
-  const photos = req.files;
-
-  if (!photos || photos.length === 0) {
+export const uploadPhotoFile = asyncHandler(async (req, res) => {
+  const files = req.files;
+  if (!files || files.length === 0) {
     throw new ApiError(400, "At least one image is required");
   }
 
-  // Extract paths from multer files
-  const filePaths = photos.map((photo) => photo.path);
+  try {
+    const uploadedImages = await Promise.all(
+      files.map((file) => uploadBufferToCloudinary(file.buffer))
+    );
 
-  const uploadedImages = await uploadOnCloudinary(filePaths);
-
-  if (!uploadedImages || uploadedImages.length === 0) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        { urls: uploadedImages.map((img) => img.secure_url) },
+        "Photos uploaded successfully"
+      )
+    );
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
     throw new ApiError(500, "Failed to upload images to Cloudinary");
   }
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        urls: uploadedImages.map((img) => img.url),
-      },
-      "Photos uploaded successfully"
-    )
-  );
 });
 
 const registerPlace = asyncHandler(async (req, res) => {
