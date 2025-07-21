@@ -158,7 +158,7 @@ const logoutUser = async (req, res) => {
     .json(new ApiResponse(200, {}, "User LoggedOut"));
 };
 
-export const uploadImageByLink = asyncHandler(async (req, res) => {
+const uploadImageByLink = asyncHandler(async (req, res) => {
   const { imageLink } = req.body;
 
   if (!imageLink) throw new ApiError(400, "URL is necessary");
@@ -176,7 +176,9 @@ export const uploadImageByLink = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to upload image to Cloudinary");
   }
 });
-export const uploadPhotoFile = asyncHandler(async (req, res) => {
+
+
+const uploadPhotoFile = asyncHandler(async (req, res) => {
   const files = req.files;
   if (!files || files.length === 0) {
     throw new ApiError(400, "At least one image is required");
