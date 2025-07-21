@@ -6,6 +6,8 @@ dotenv.config({
   path: "./.env",
 });
 
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN); 
+
 connectDB()
 .then(() => {
   app.on("error", (error) => {
